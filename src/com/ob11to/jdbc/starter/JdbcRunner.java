@@ -5,16 +5,24 @@ import org.postgresql.Driver;
 
 import java.sql.SQLException;
 
+
 public class JdbcRunner {
     public static void main(String[] args) throws SQLException {
         Class<Driver> driverClass = Driver.class;
 
-
-        try (var connection = ConnectionManager.open()) {
+        String sql = """
+                CREATE TABLE IF NOT EXISTS info
+                (
+                    id SERIAL PRIMARY KEY,
+                    data TEXT NOT NULL
+                );
+                """;
+        try (var connection = ConnectionManager.open(); var statement = connection.createStatement()) {
             System.out.println(connection.getTransactionIsolation()); // по умолчанию TRANSACTION_READ_COMMITTED
+            System.out.println(connection.getSchema());
+            var executeStatement = statement.execute(sql);
+            System.out.println(executeStatement);
 
         }
-
-
     }
 }
