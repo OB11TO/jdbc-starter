@@ -6,9 +6,9 @@ import java.sql.SQLException;
 
 public final class ConnectionManager {
 
-    private static final String URL = "jdbc:postgresql://localhost:5432/flight_repository";
-    private static final String USER = "postgres";
-    private static final String PASSWORD = "postgres";
+    private static final String URL_KEY = "db.url";
+    private static final String USER_KEY = "db.user";
+    private static final String PASSWORD_KEY = "db.password";
 
     private ConnectionManager() {
     }
@@ -25,9 +25,14 @@ public final class ConnectionManager {
         }
     }
 
-    public static Connection open(){  //открывает соединение
+    public static Connection open() {  //открывает соединение
         try {
-            return DriverManager.getConnection(URL,USER,PASSWORD);
+            return DriverManager.getConnection(   // по ключу получаем value
+                    PropertiesUtil.get(URL_KEY),
+                    PropertiesUtil.get(USER_KEY),
+                    PropertiesUtil.get(PASSWORD_KEY)
+            );
+
         } catch (SQLException e) {
             throw new RuntimeException(e); //исключение обернули в Runtime
         }
