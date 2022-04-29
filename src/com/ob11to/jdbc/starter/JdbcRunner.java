@@ -4,32 +4,70 @@ import com.ob11to.jdbc.starter.util.ConnectionManager;
 import org.postgresql.Driver;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class JdbcRunner {
     public static void main(String[] args) throws SQLException {
-        String flightId = "2 OR '' = '' " ; //плохо! НУЖНО ИСПОЛЬЗОВАТЬ PreparedStatement, чтобы не было таких ситуаций
+        Long flightId = 2L;
         var ticketsByFlightId = getTicketsByFlightId(flightId);
-        System.out.println(ticketsByFlightId);
+        System.out.println(ticketsByFlightId + "\n");
 
+        var flightsBetween = getFlightsBetween(LocalDate.of(2020, 1, 1).atStartOfDay(), LocalDateTime.now());
 
+        System.out.println(flightsBetween);
     }
 
-    private static List<Long> getTicketsByFlightId(String flightId) throws SQLException {
+
+    private static List<Long> getFlightsBetween(LocalDateTime start, LocalDateTime end) throws SQLException {
+        List<Long> result = new ArrayList<>();
+
+        String sql = """
+                SELECT id
+                FROM task26.flight
+                WHERE departure_date BETWEEN ? AND ?
+                """;
+
+        try (var connection = ConnectionManager.open();
+             var preparedStatement = connection.prepareStatement(sql)) {
+
+            System.out.println(preparedStatement);
+            preparedStatement.setTimestamp(1, Timestamp.valueOf(start));
+
+            System.out.println(preparedStatement);
+            preparedStatement.setTimestamp(2, Timestamp.valueOf(end));
+            System.out.println(preparedStatement);
+
+            var resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                result.add(resultSet.getLong("id"));
+            }
+
+        }
+
+        return result;
+    }
+
+
+    private static List<Long> getTicketsByFlightId(Long flightId) throws SQLException {
         List<Long> result = new ArrayList<>();
 
         //language=PostgresSQL
         String sql = """
                 SELECT id
                 FROM task26.ticket t
-                WHERE t.flight_id = %s
-                """.formatted(flightId);
+                WHERE t.flight_id = ?
+                """;
 
         try (var connection = ConnectionManager.open();
-             var statement = connection.createStatement()) {
-            var resultSet = statement.executeQuery(sql);
+             var prepareStatement = connection.prepareStatement(sql)) {
+
+            prepareStatement.setLong(1, flightId);
+
+            var resultSet = prepareStatement.executeQuery();
 
             while (resultSet.next()) {
 //                result.add(resultSet.getLong("id"));
@@ -40,3 +78,4 @@ public class JdbcRunner {
         return result;
     }
 }
+
