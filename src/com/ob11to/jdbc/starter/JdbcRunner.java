@@ -19,6 +19,37 @@ public class JdbcRunner {
         var flightsBetween = getFlightsBetween(LocalDate.of(2020, 1, 1).atStartOfDay(), LocalDateTime.now());
 
         System.out.println(flightsBetween);
+
+        checkMetaData();
+    }
+
+    private static void checkMetaData() throws SQLException {
+        try (var connection = ConnectionManager.open()) {
+            var metaData = connection.getMetaData();
+            var driverName = metaData.getDriverName();
+            System.out.println(driverName);
+
+            var catalogs = metaData.getCatalogs();
+            while (catalogs.next()){
+                var catalog = catalogs.getString(1);
+                System.out.println(catalog); //flight_repository
+
+                var schemas = metaData.getSchemas();
+                System.out.println(schemas);
+                while (schemas.next()){
+                    var schema = schemas.getString("TABLE_SCHEM");
+                    System.out.println("--------------");
+                    System.out.println(schema);
+                    var tables = metaData.getTables(catalog, schema, "%", new String[]{"TABLE"});
+                    while (tables.next()){
+                        var table_name = tables.getString("TABLE_NAME");
+                        System.out.println(table_name);
+
+                    }
+                }
+            }
+        }
+
     }
 
 
