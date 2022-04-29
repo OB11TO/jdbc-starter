@@ -17,10 +17,12 @@ public class JdbcRunner {
                     data TEXT NOT NULL
                 );
                 """;
-        try (var connection = ConnectionManager.open(); var statement = connection.createStatement()) {
+        try (var connection = ConnectionManager.open();
+             var statement = connection.createStatement()) {
             System.out.println(connection.getTransactionIsolation()); // по умолчанию TRANSACTION_READ_COMMITTED
-            System.out.println(connection.getSchema());
-            var executeStatement = statement.execute(sql);
+            System.out.println(connection.getSchema()); //получаем схему, где находимся
+
+            var executeStatement = statement.execute(sql); // отправляем запрос в бд
             System.out.println(executeStatement);
 
         }
