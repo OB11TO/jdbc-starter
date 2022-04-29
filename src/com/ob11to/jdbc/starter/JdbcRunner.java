@@ -41,6 +41,9 @@ public class JdbcRunner {
             preparedStatement.setTimestamp(2, Timestamp.valueOf(end));
             System.out.println(preparedStatement);
 
+            preparedStatement.setFetchSize(50); // итерационно будем считывать данные с бд
+            preparedStatement.setQueryTimeout(10); //в течение которых драйвер будет ожидать выполнения объекта
+            preparedStatement.setMaxRows(100); //Устанавливает ограничение на максимальное количество строк, которое может содержать любой объект ResultSe
             var resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 result.add(resultSet.getLong("id"));
