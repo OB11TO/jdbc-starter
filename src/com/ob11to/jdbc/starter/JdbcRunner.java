@@ -10,20 +10,33 @@ public class JdbcRunner {
     public static void main(String[] args) throws SQLException {
         Class<Driver> driverClass = Driver.class;
 
+//        Пример INSERT
+//         String sql = """
+//                INSERT INTO info(data)
+//                VALUES
+//                ('Test1'),
+//                ('Test2'),
+//                ('Test3'),
+//                ('Test4');
+//                """;
+
         String sql = """
-                CREATE TABLE IF NOT EXISTS info
-                (
-                    id SERIAL PRIMARY KEY,
-                    data TEXT NOT NULL
-                );
+                UPDATE info
+                SET data = 'newTest'
+                WHERE id > 1;
                 """;
         try (var connection = ConnectionManager.open();
              var statement = connection.createStatement()) {
+
             System.out.println(connection.getTransactionIsolation()); // по умолчанию TRANSACTION_READ_COMMITTED
             System.out.println(connection.getSchema()); //получаем схему, где находимся
 
-            var executeStatement = statement.execute(sql); // отправляем запрос в бд
+           // var executeStatement = statement.execute(sql); // отправляем запрос в бд
+            var executeStatement = statement.executeUpdate(sql); // отправляет запрос в бд, возвращает int, кол-во изменений
+
+
             System.out.println(executeStatement);
+            System.out.println(statement.getUpdateCount()); // вернет количество обновлений в бд
 
         }
     }
