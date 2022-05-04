@@ -3,6 +3,8 @@ package com.ob11to.jdbc.starter.test;
 import com.ob11to.jdbc.starter.util.ConnectionManager;
 import org.postgresql.Driver;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -59,6 +61,44 @@ public class Test {
 
 
 
+        }
+    }
+}
+
+
+class BatchTransactionRunner {
+    public static void main(String[] args) throws SQLException {
+        long flightId = 9;
+        var deleteFlightSql = "DELETE FROM task26.flight WHERE id = " + flightId;
+        var deleteTicketsSql = "DELETE FROM task26.ticket WHERE flight_id = " + flightId ;
+
+        Connection connection = null;
+        Statement statement = null;
+
+        try {
+            connection = ConnectionManager.open();
+            connection.setAutoCommit(false); //убрали auto commit mode
+
+            statement = connection.createStatement();
+            statement.addBatch(deleteFlightSql);
+            statement.addBatch(deleteTicketsSql);
+
+            var ints = statement.executeBatch();
+
+            connection.commit(); //commit транзакции
+
+        } catch (Exception e) {
+            if (connection != null) {
+                connection.rollback();
+            }
+            throw e; // пробрасываем исключение дальше
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+            if (statement != null) {
+                statement.close();
+            }
         }
     }
 }
