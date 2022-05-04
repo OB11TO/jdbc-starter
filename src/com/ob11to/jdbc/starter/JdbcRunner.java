@@ -1,7 +1,7 @@
 package com.ob11to.jdbc.starter;
 
 import com.ob11to.jdbc.starter.util.ConnectionManager;
-import org.postgresql.Driver;
+
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -31,13 +31,13 @@ public class JdbcRunner {
 
             var catalogs = metaData.getCatalogs();
             while (catalogs.next()){
-                var catalog = catalogs.getString(1);
+                var catalog = catalogs.getString("TABLE_CAT"); //получить имя каталога
                 System.out.println(catalog); //flight_repository
 
                 var schemas = metaData.getSchemas();
                 System.out.println(schemas);
                 while (schemas.next()){
-                    var schema = schemas.getString("TABLE_SCHEM");
+                    var schema = schemas.getString("TABLE_SCHEM");  // получить имя схемы
                     System.out.println("--------------");
                     System.out.println(schema);
                     var tables = metaData.getTables(catalog, schema, "%", new String[]{"TABLE"});
@@ -77,6 +77,8 @@ public class JdbcRunner {
             preparedStatement.setMaxRows(100); //Устанавливает ограничение на максимальное количество строк, которое может содержать любой объект ResultSe
             var resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
+//                result.add(resultSet.getObject("id", Long.class)
+//                );
                 result.add(resultSet.getLong("id"));
             }
 
