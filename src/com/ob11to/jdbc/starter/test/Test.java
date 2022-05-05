@@ -30,7 +30,7 @@ public class Test {
 //                FROM task26.ticket;
 //                """;
 
-        try (var connection = ConnectionManager.open();
+        try (var connection = ConnectionManager.get();
              var statement = connection.createStatement()) {
 
             System.out.println(connection.getTransactionIsolation()); // по умолчанию TRANSACTION_READ_COMMITTED
@@ -76,7 +76,7 @@ class BatchTransactionRunner {
         Statement statement = null;
 
         try {
-            connection = ConnectionManager.open();
+            connection = ConnectionManager.get();
             connection.setAutoCommit(false); //убрали auto commit mode
 
             statement = connection.createStatement();
