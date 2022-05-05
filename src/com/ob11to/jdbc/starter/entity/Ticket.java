@@ -19,6 +19,8 @@ public class Ticket {
         this.cost = cost;
     }
 
+    public Ticket(){} //обязательно во всех сущностях должен быть такой конструктор
+
     public Long getId() {
         return id;
     }
