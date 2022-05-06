@@ -1,14 +1,27 @@
 package com.ob11to.jdbc.starter;
 
 import com.ob11to.jdbc.starter.dao.TicketDao;
+import com.ob11to.jdbc.starter.dto.TicketFilter;
 import com.ob11to.jdbc.starter.entity.Ticket;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class DaoRunner {
     public static void main(String[] args) {
-       //deleteTest(56L); //saveTest(); // updateTestCost();
-        findByAllTest();
+       //deleteTest(56L); //saveTest(); // updateTestCost() //findByAllTest();
+
+        findByAllParamTest();
+
+    }
+
+    private static void findByAllParamTest() {
+        var ticketDao = TicketDao.getInstance();
+        TicketFilter filter = new TicketFilter(10, 0, null, "A1");
+        var byAll = ticketDao.findByAll(filter);
+        for(Ticket ticket : byAll){
+            System.out.println(ticket);
+        }
     }
 
     private static void findByAllTest() {

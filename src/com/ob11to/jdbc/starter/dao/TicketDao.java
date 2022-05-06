@@ -1,6 +1,7 @@
 package com.ob11to.jdbc.starter.dao;
 
 
+import com.ob11to.jdbc.starter.dto.TicketFilter;
 import com.ob11to.jdbc.starter.entity.Ticket;
 import com.ob11to.jdbc.starter.exception.DaoException;
 import com.ob11to.jdbc.starter.util.ConnectionManager;
@@ -9,6 +10,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static java.util.stream.Collectors.*;
 
 //Должен быть Singleton
 public class TicketDao {  // не делать final, так как в H S используют Proxy
@@ -70,13 +73,59 @@ public class TicketDao {  // не делать final, так как в H S ис�
         }
     }
 
-    public List<Ticket> findByAll(){
+    public List<Ticket> findByAll(TicketFilter filter) {
+        List<Object> params = new ArrayList<>();
+        List<String> whereSql = new ArrayList<>();
+
+        if (filter.getSeat_no() != null) {
+            whereSql.add("seat_no LIKE ?");
+            params.add("%" + filter.getSeat_no() + "%");
+        }
+
+        if (filter.getPassenger_name() != null) {
+            whereSql.add("passenger_name = ?");
+            params.add(filter.getPassenger_name());
+        }
+
+        params.add(filter.getLimit());
+        params.add(filter.getOffset());
+
+        var where = whereSql.stream()
+                .collect(joining(" AND ", " WHERE ", "LIMIT ? OFFSET ? "));
+
+        String sql;
+        if (whereSql.isEmpty()) {
+            sql = FIND_BY_ALL;
+        } else {
+            sql = FIND_BY_ALL + where;
+        }
+
+        try (var connection = ConnectionManager.get();
+             var preparedStatement = connection.prepareStatement(sql)) {
+
+            for (int i = 0; i < params.size(); i++) {
+                preparedStatement.setObject(i + 1, params.get(i));
+            }
+            var resultSet = preparedStatement.executeQuery();
+            List<Ticket> allTicket = new ArrayList<>();
+
+            while (resultSet.next()) {
+                allTicket.add(buildTicket(resultSet));
+            }
+            return allTicket;
+        } catch (SQLException throwable) {
+            throw new DaoException(throwable);
+        }
+
+    }
+
+    public List<Ticket> findByAll() {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_BY_ALL)) {
 
             List<Ticket> allTicket = new ArrayList<>();
             var resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 allTicket.add(buildTicket(resultSet));
             }
 
