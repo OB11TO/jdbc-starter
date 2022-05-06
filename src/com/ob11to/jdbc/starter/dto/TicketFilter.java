@@ -4,8 +4,9 @@ import lombok.Value;
 
 @Value
 public class TicketFilter {
+    int id;
     int limit;
-    int offset;
+   // int offset;
     String passenger_name;
     String seat_no;
 }

@@ -17,7 +17,7 @@ public class DaoRunner {
 
     private static void findByAllParamTest() {
         var ticketDao = TicketDao.getInstance();
-        TicketFilter filter = new TicketFilter(10, 0, null, "A1");
+        TicketFilter filter = new TicketFilter(10,10, "Эдуард Щеглов", "A1");
         var byAll = ticketDao.findByAll(filter);
         for(Ticket ticket : byAll){
             System.out.println(ticket);

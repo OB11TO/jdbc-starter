@@ -77,6 +77,11 @@ public class TicketDao {  // не делать final, так как в H S ис�
         List<Object> params = new ArrayList<>();
         List<String> whereSql = new ArrayList<>();
 
+        if(filter.getId() > 0){
+            whereSql.add("id > ?"); //эффективнее, чем offset
+            params.add(filter.getId());
+        }
+
         if (filter.getSeat_no() != null) {
             whereSql.add("seat_no LIKE ?");
             params.add("%" + filter.getSeat_no() + "%");
@@ -88,10 +93,12 @@ public class TicketDao {  // не делать final, так как в H S ис�
         }
 
         params.add(filter.getLimit());
-        params.add(filter.getOffset());
+     //   params.add(filter.getOffset());
 
         var where = whereSql.stream()
-                .collect(joining(" AND ", " WHERE ", "LIMIT ? OFFSET ? "));
+                .collect(joining(" AND ", " WHERE ", " LIMIT ? "));
+
+
 
         String sql;
         if (whereSql.isEmpty()) {
@@ -104,9 +111,12 @@ public class TicketDao {  // не делать final, так как в H S ис�
              var preparedStatement = connection.prepareStatement(sql)) {
 
             for (int i = 0; i < params.size(); i++) {
+
                 preparedStatement.setObject(i + 1, params.get(i));
             }
             var resultSet = preparedStatement.executeQuery();
+
+            System.out.println(preparedStatement);
             List<Ticket> allTicket = new ArrayList<>();
 
             while (resultSet.next()) {
