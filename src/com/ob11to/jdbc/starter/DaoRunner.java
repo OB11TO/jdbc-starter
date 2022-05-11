@@ -5,19 +5,20 @@ import com.ob11to.jdbc.starter.dto.TicketFilter;
 import com.ob11to.jdbc.starter.entity.Ticket;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Optional;
 
 public class DaoRunner {
     public static void main(String[] args) {
-       //deleteTest(56L); //saveTest(); // updateTestCost() //findByAllTest();
+       //deleteTest(56L); //saveTest(); // updateTestCost() //findByAllTest(); //findByAllParamTest();
 
-        findByAllParamTest();
+        var ticket = TicketDao.getInstance().findById(5L);
+        System.out.println(ticket);
 
     }
 
     private static void findByAllParamTest() {
         var ticketDao = TicketDao.getInstance();
-        TicketFilter filter = new TicketFilter(10,10, "Эдуард Щеглов", "A1");
+        TicketFilter filter = new TicketFilter(10,10, null, null);
         var byAll = ticketDao.findByAll(filter);
         for(Ticket ticket : byAll){
             System.out.println(ticket);
@@ -55,7 +56,7 @@ public class DaoRunner {
         var ticket = new Ticket();
         ticket.setPassenger_no("1234567");
         ticket.setPassenger_name("Test");
-        ticket.setFlight_id(3);
+       // ticket.setFlight(3);
         ticket.setSeat_no("B3");
         ticket.setCost(BigDecimal.TEN);
 

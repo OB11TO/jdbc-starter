@@ -2,6 +2,7 @@ package com.ob11to.jdbc.starter.dao;
 
 
 import com.ob11to.jdbc.starter.dto.TicketFilter;
+import com.ob11to.jdbc.starter.entity.Flight;
 import com.ob11to.jdbc.starter.entity.Ticket;
 import com.ob11to.jdbc.starter.exception.DaoException;
 import com.ob11to.jdbc.starter.util.ConnectionManager;
@@ -14,7 +15,7 @@ import java.util.Optional;
 import static java.util.stream.Collectors.*;
 
 //Должен быть Singleton
-public class TicketDao {  // не делать final, так как в H S используют Proxy
+public class TicketDao implements Dao<Long,Ticket> {  // не делать final, так как в H S используют Proxy
     private static TicketDao INSTANCE;
 
     private static final String DELETE_SQL = """   
@@ -35,15 +36,25 @@ public class TicketDao {  // не делать final, так как в H S ис�
             WHERE id = ?;
             """;
     private static final String FIND_BY_ALL = """
-            SELECT id,
+            SELECT ticket.id,
             passenger_no,
             passenger_name,
             flight_id,
             seat_no,
-            cost
+            cost,
+            f.status,
+            f.flight_no,
+            f.aircraft_id,
+            f.arrival_airport_code,
+            f.arrival_date,
+            f.departure_airport_code,
+            f.departure_date
             FROM task26.ticket
+            JOIN task26.flight f on f.id = ticket.flight_id
             """;
-    private static final String FIND_BY_ID = FIND_BY_ALL + "WHERE id = ?";
+    private static final String FIND_BY_ID = FIND_BY_ALL + "WHERE ticket.id = ?";
+
+    private final FlightDao flightDao = FlightDao.getInstance();
 
     private TicketDao() {
     }
@@ -150,7 +161,7 @@ public class TicketDao {  // не делать final, так как в H S ис�
              var preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
             preparedStatement.setString(1, ticket.getPassenger_no());
             preparedStatement.setString(2, ticket.getPassenger_name());
-            preparedStatement.setInt(3, ticket.getFlight_id());
+            preparedStatement.setInt(3, ticket.getFlight().getId());
             preparedStatement.setString(4, ticket.getSeat_no());
             preparedStatement.setBigDecimal(5, ticket.getCost());
             preparedStatement.setLong(6, ticket.getId());
@@ -167,7 +178,7 @@ public class TicketDao {  // не делать final, так как в H S ис�
              var preparedStatement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, ticket.getPassenger_no());
             preparedStatement.setString(2, ticket.getPassenger_name());
-            preparedStatement.setInt(3, ticket.getFlight_id());
+            preparedStatement.setInt(3, ticket.getFlight().getId());
             preparedStatement.setString(4, ticket.getSeat_no());
             preparedStatement.setBigDecimal(5, ticket.getCost());
 
@@ -196,11 +207,23 @@ public class TicketDao {  // не делать final, так как в H S ис�
     }
 
     private Ticket buildTicket(ResultSet resultSet) throws SQLException {
+        var flight = new Flight(
+                resultSet.getInt("flight_id"),
+                resultSet.getString("flight_no"),
+                resultSet.getTimestamp("departure_date").toLocalDateTime(),
+                resultSet.getString("departure_airport_code"),
+                resultSet.getTimestamp("arrival_date").toLocalDateTime(),
+                resultSet.getString("arrival_airport_code"),
+                resultSet.getInt("aircraft_id"),
+                resultSet.getString("status")
+        );
+
+
         return new Ticket(
                 resultSet.getLong("id"),
                 resultSet.getString("passenger_no"),
                 resultSet.getString("passenger_name"),
-                resultSet.getInt("flight_id"),
+                flightDao.findById(resultSet.getLong("flight_id")).orElse(null),
                 resultSet.getString("seat_no"),
                 resultSet.getBigDecimal("cost"));
     }
